@@ -1,3 +1,7 @@
+
+# We can remove this as we have gemini api, and There is an example project
+
+
 import network, socket
 import urequests as requests
 import ujson
