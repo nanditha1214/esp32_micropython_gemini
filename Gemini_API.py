@@ -2,6 +2,7 @@
 
 save secrets.py first:
 '''
+
 import network, socket
 import urequests as requests
 import ujson
@@ -34,14 +35,14 @@ def query(query, ask_user=False):
     global chat_history
 
     if ask_user:
-        question = input("Prompt for Gemini: ")
+        question = input("Type: ")
     else:
         question = query
 
     # Add user message to history
     chat_history.append({
         "role": "user",
-        "parts": [{"text": question}]
+        "parts": [{"text": str(question)}]
     })
 
     payload = ujson.dumps({
@@ -52,17 +53,19 @@ def query(query, ask_user=False):
         'Content-Type': 'application/json'
     }
 
-    response = requests.post(url, headers=headers, data=payload)
-    response_data = response.json()
+    try:
+        response = requests.post(url, headers=headers, data=payload)
+        response_data = response.json()
+        message = response_data["candidates"][0]["content"]["parts"][0]["text"]
 
-    # Extract and store model reply
-    message = response_data["candidates"][0]["content"]["parts"][0]["text"]
+        chat_history.append({
+            "role": "model",
+            "parts": [{"text": message}]
+        })
 
-    chat_history.append({
-        "role": "model",
-        "parts": [{"text": message}]
-    })
-
-    response.close()
+    except Exception as e:
+        message = f"[Error: {e}\n reply: {response_data}]"
+    finally:
+        response.close()
     return message
 
